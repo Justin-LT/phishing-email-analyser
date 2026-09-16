@@ -1,145 +1,121 @@
 # Phishing Email Analyser
 
-A small command line tool that takes a raw email (`.eml` file) and checks it
-for the usual phishing tells: failed authentication, mismatched sender
-addresses, suspicious links, and urgent or credential-harvesting language.
-It gives each finding a weight and turns the total into a Low, Medium or
-High risk score.
+A small desktop tool that checks a saved email for the tricks phishing and
+business email compromise scams actually rely on, failed authentication,
+disguised links, and someone impersonating a real person, and gives it a
+plain Low, Medium or High risk score.
 
-This started as a way to put some structure around the phishing awareness
-training I run at work, rather than relying on "does this look dodgy" gut
-feel alone.
+No external services required to get a result, and no dependencies
+beyond Python itself.
 
-## What it actually checks
+![Main window showing a high risk result](screenshots/gui-high-risk.png)
 
-**Authentication**
-Reads the `Authentication-Results` header the receiving mail server already
-left behind, rather than redoing SPF/DKIM/DMARC lookups from scratch (the
-receiving server has context we don't, like the connecting IP). Also
-compares the visible `From` address against `Return-Path`, since a mismatch
-there is a classic spoofing sign that isn't always caught upstream.
+## Why this exists
 
-**Links**
-Pulls every URL out of the plain text and HTML body and flags:
-- links to a raw IP address instead of a domain
-- known URL shorteners (the real destination is hidden)
-- punycode domains (a common way to fake a lookalike domain)
-- link text that shows one domain but points somewhere else entirely
+This started as a way to put some structure around the phishing
+awareness training I run at work, rather than relying on "does this look
+dodgy" gut feel alone. It's built to catch what a lot of simpler tools
+miss: an email can pass every authentication check and still be a scam,
+if it was sent through a completely genuine free email account that
+simply isn't the person it claims to be. See
+[docs/CHECKS.md](docs/CHECKS.md) for exactly how and why.
 
-**Wording**
-Flags urgency phrases ("act now", "account will be closed"), generic
-greetings ("Dear Valued Customer"), and requests for sensitive information
-or a personal phone number. None of these prove anything on their own,
-they only add real weight in combination with the technical checks above.
+## Features
 
-**Impersonation**
-This is the one that catches what authentication and reputation checks
-genuinely cannot. A message can pass SPF, DKIM and DMARC perfectly and
-still be a scam, if it was sent through a real, unspoofed Gmail account
-that simply isn't the person it claims to be. That's the mechanism behind
-most CEO fraud and business email compromise: pick a trusted name, send
-from a disposable free-mail account, keep the first message low-key
-("what's your mobile number?"), then move to a channel with no filtering
-at all before asking for something urgent.
+- **Authentication checks**, SPF, DKIM, DMARC, and sender address
+  alignment
+- **Link checks**, raw IP links, URL shorteners, punycode domains,
+  disguised link text
+- **Impersonation detection**, catches a display name pretending to be
+  someone specific, including cases that pass authentication cleanly
+- **Optional VirusTotal lookups**, real threat intelligence on top of the
+  built-in heuristics, only when you choose to turn it on
+- **Desktop GUI**, no terminal required, with a saved API key and a
+  saved contacts list so you only set things up once
+- **Command line tool**, for scripting or anyone who prefers it
+- **HTML report export**, to save or forward a result
 
-Two checks aim at this specifically:
-- **No setup required:** flags a display name that reads as a real
-  person's full name, sent from a well-known free consumer provider
-  (Gmail, Yahoo, Outlook.com, and similar). Weak on its own, plenty of
-  genuine contacts use Gmail, but it needs nothing configured and catches
-  the general shape of the attempt.
-- **Known contacts (optional, and much stronger):** save a colleague's
-  name against the domain they actually send from. If a display name
-  matches a saved contact but the sending domain doesn't, that's about as
-  clear a signal as this kind of tool can give, someone is using a real
-  name that isn't theirs to use. Manage this list from the GUI's "Known
-  contacts" section, or edit `~/.phishing_analyser/contacts.json` directly
-  (a simple `{"name": "expected-domain.com"}` mapping).
+## Screenshots
 
-## Optional: VirusTotal reputation checks
+*(Add your own here, see the "Taking your own screenshots" section
+below for what's worth capturing.)*
 
-Heuristics catch the obvious tricks, a raw IP address, a mismatched link,
-punycode. They won't catch a domain that looks completely ordinary but has
-already been flagged by security vendors elsewhere. Set an environment
-variable and the tool will check each link against VirusTotal on top of
-the heuristics:
+![Quick check flagging a phishing email](screenshots/gui-high-risk.png)
+![Known contacts catching an impersonation attempt](screenshots/gui-impersonation.png)
 
-```bash
-export VT_API_KEY="your-key-here"
-```
+## Getting started
 
-Get a free key at https://www.virustotal.com/gui/join-us. Without a key
-set, the tool runs exactly as before and says so in the output, it never
-fails or hangs waiting for a key that isn't there.
-
-Two things worth knowing before you lean on this:
-- The free tier allows 4 requests a minute, so an email with several links
-  takes a bit longer to check, each one is checked in turn rather than all
-  at once.
-- Submitting a URL to VirusTotal isn't private. Other analysts using the
-  platform can see what's been submitted, which matters if a link carries
-  a tracking token or points somewhere sensitive. Fine for the generic
-  phishing links this tool is aimed at, worth pausing on for anything more
-  sensitive than that.
-
-The GUI's "quick check" mode never calls VirusTotal at all, regardless of
-whether a key is saved, so you always know which mode you're getting.
-
-## Setup
-
-Requires Python 3.9 or later. No external packages, everything here uses
-the standard library, including the graphical interface (`tkinter`, which
-is bundled with Python on Windows and Mac).
+Requires Python 3.9 or later. Nothing else to install.
 
 ```bash
 git clone https://github.com/<your-username>/phishing-email-analyser.git
 cd phishing-email-analyser
-python3 cli.py samples/phishing_sample.eml
-```
-
-## Graphical interface
-
-For anyone who'd rather not use a terminal, `gui.py` gives you the same
-checks in a window: pick a `.eml` file, choose quick (offline) or full
-(adds a VirusTotal lookup) checking, and see the result with a coloured
-risk banner.
-
-```bash
 python3 gui.py
 ```
 
-The VirusTotal key can be typed into the window and saved for next time,
-rather than needing an environment variable, which is stored locally by
-`analyser/api_key_store.py` and is never bundled into the repository or
-sent anywhere except VirusTotal itself. On Linux, if the window fails to
-open with a message about `tkinter` not being found, install it with
-`sudo apt install python3-tk` (Windows and Mac installers include it
-already).
+On Linux, if the window doesn't open and mentions `tkinter`, run
+`sudo apt install python3-tk` first. Windows and Mac installers include
+it already.
 
-## Usage (command line)
+## How to use it
+
+1. **Get a `.eml` file to check.** Most mail clients let you export a
+   single email:
+   - **Gmail**: open the email, click the three-dot menu, "Show
+     original", then "Download original"
+   - **Outlook**: drag the email out of the message list onto your
+     desktop
+   - Or use one of the sample files in `samples/`, included so you can
+     try the tool immediately without needing a real phishing email to
+     hand
+2. **Open the app** and click **Choose .eml file...** to select it.
+3. **Pick a checking mode.**
+   - *Quick check* runs everything offline, instantly, no setup.
+   - *Full check* also looks up every link on VirusTotal. Needs a free
+     API key, see below.
+4. **(Optional) Save a VirusTotal API key.** Get one free at
+   [virustotal.com/gui/join-us](https://www.virustotal.com/gui/join-us),
+   paste it in, click **Save**. It's stored locally on your machine and
+   only sent to VirusTotal itself.
+5. **(Optional) Add known contacts.** If someone impersonates a real
+   colleague, the tool can only catch it if it knows what that person's
+   real email domain looks like. Add a name and their actual domain
+   under **Known contacts**, this is the single strongest check the tool
+   has.
+6. **Click Analyse email.** The banner along the top turns green, amber
+   or red, with every reason listed underneath, each with the number of
+   points it added to the score.
+7. **(Optional) Save HTML report...** to keep or forward a copy of the
+   result.
+
+### Command line, if you'd rather script it
 
 ```bash
 python3 cli.py path/to/email.eml
-```
-
-To also write an HTML report:
-
-```bash
 python3 cli.py path/to/email.eml --html report.html
 ```
 
-### Getting a .eml file to test with
+## Taking your own screenshots
 
-Most mail clients let you export a single email as `.eml`:
-- **Gmail**: open the email, click the three-dot menu, "Show original", then
-  "Download original"
-- **Outlook**: drag the email out of the message list onto your desktop
-- Or use one of the two sample files included in `samples/`
+Two are worth capturing to show the tool actually doing something, not
+just sitting empty:
+
+1. **Run the quick check on `samples/phishing_sample.eml`.** This gives
+   you the full red High risk banner with authentication failures and
+   disguised links listed, the clearest single image of what the tool
+   does.
+2. **Add a known contact, then run the quick check on
+   `samples/impersonation_sample.eml`.** Add the name "Alex Morgan"
+   against the domain `example-corp.co.uk` under Known contacts, then
+   analyse the email. It jumps to High on the identity mismatch alone,
+   a good second screenshot since it shows the impersonation check
+   actually working, not just the obvious phishing case.
+
+Save them into the `screenshots/` folder using the filenames already
+referenced above (`gui-high-risk.png`, `gui-impersonation.png`), and
+they'll appear in this README automatically once pushed to GitHub.
 
 ## Example output
-
-Running against the included samples gives three different pictures worth
-comparing. The phishing sample fails authentication outright:
 
 ```
 ============================================================
@@ -164,31 +140,8 @@ Risk    : High (100/100)
 ============================================================
 ```
 
-The impersonation sample passes authentication cleanly, it really was sent
-through Gmail, and has no links to check at all. Without any setup, it
-still gets flagged on the identity mismatch alone:
-
-```
-Subject : Quick update
-From    : Alex Morgan <randomname12345@gmail.com>
-Risk    : Medium (21/100)
-------------------------------------------------------------
-  [+15] display name "Alex Morgan" reads as a personal name, sent from a free email address (randomname12345@gmail.com)
-  [+ 6] asks for a personal contact number: "phone number"
-```
-
-Save "Alex Morgan" against her real domain as a known contact, and the
-same email jumps straight to High:
-
-```
-Risk    : High (56/100)
-------------------------------------------------------------
-  [+50] claims to be "Alex Morgan" but doesn't come from their known domain (gmail.com instead of example-corp.co.uk)
-  [+ 6] asks for a personal contact number: "phone number"
-```
-
-The legitimate sample gets a Low score with no findings, so the tool
-isn't just flagging everything.
+More examples, including the impersonation case, are in
+[docs/CHECKS.md](docs/CHECKS.md).
 
 ## Project structure
 
@@ -207,38 +160,11 @@ phishing-email-analyser/
 │   ├── api_key_store.py     saves the VirusTotal key locally for the GUI
 │   ├── scoring.py           combines everything into one risk score
 │   └── report.py            console and HTML output
-└── samples/
-    ├── phishing_sample.eml
-    ├── legitimate_sample.eml
-    └── impersonation_sample.eml
+├── samples/                 three test emails, safe to run against
+├── docs/CHECKS.md           detailed explanation of every check
+└── screenshots/             for your own screenshots, see above
 ```
-
-## A decision worth explaining
-
-The scoring weights aren't derived from any formal model, they're a
-judgement call: authentication failures and disguised links carry the most
-weight because they're the hardest things for a scammer to fake
-convincingly, while wording issues carry the least because urgent language
-alone is cheap to write and appears in plenty of genuine marketing email
-too. If you run this against your own inbox and it feels too trigger-happy
-or too lax, `AUTH_WEIGHTS` in `analyser/scoring.py` is the place to adjust
-it.
-
-## Limitations
-
-- A Low score means nothing here tripped an automated rule, not that the
-  email is definitely safe. Well-resourced attackers can pass SPF/DKIM/
-  DMARC, avoid links entirely, and still be running a scam, that's exactly
-  what the impersonation sample demonstrates.
-- Authentication passing tells you the transport is legitimate, nothing
-  about whether the claimed identity is real. Treat the two as separate
-  questions, because they are.
-- The known-contacts check is only as good as the list you keep. It won't
-  catch someone it's never heard of, and a contact saved against the
-  wrong domain will happily wave through the real impersonation.
-- The wording lists are a starting point, not a complete list. Real
-  phishing and BEC campaigns constantly vary their language.
 
 ## Licence
 
-MIT, see `LICENSE`.
+MIT, see [LICENSE](LICENSE).
