@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.html
+!samples/*.html
+.phishing_analyser/
+gui_screenshot*.png

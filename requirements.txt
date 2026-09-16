@@ -1,0 +1,3 @@
+# No external dependencies. Everything here uses the Python standard library
+# (email, re, urllib.parse, argparse). This file exists mainly so anyone
+# cloning the repo knows that's a deliberate choice, not an oversight.
