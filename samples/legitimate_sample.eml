@@ -1,0 +1,21 @@
+Return-Path: <notifications@northfieldbank.example>
+Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=northfieldbank.example; dkim=pass header.d=northfieldbank.example; dmarc=pass header.from=northfieldbank.example
+From: "Northfield Bank" <notifications@northfieldbank.example>
+Reply-To: notifications@northfieldbank.example
+To: customer@example.com
+Subject: Your monthly statement is ready
+Date: Mon, 08 Sep 2026 09:14:22 +0000
+Message-ID: <sample-legit-001@northfieldbank.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+
+Hi,
+
+Your statement for August is now available to view in online banking.
+No action is needed from you.
+
+You can view it any time by logging in directly at
+https://www.northfieldbank.example/login
+
+Thanks,
+Northfield Bank

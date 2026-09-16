@@ -1,0 +1,41 @@
+Return-Path: <bounce@secure-mailer-relay.net>
+Authentication-Results: mx.example.com; spf=fail smtp.mailfrom=northfield-bank-alerts.com; dkim=fail header.d=northfield-bank-alerts.com; dmarc=fail header.from=northfieldbank.example
+From: "Northfield Bank Security" <security@northfield-bank-alerts.com>
+Reply-To: recovery-support@mail-secure-check.com
+To: customer@example.com
+Subject: Urgent: Unusual activity detected on your account
+Date: Mon, 08 Sep 2026 09:14:22 +0000
+Message-ID: <sample-phishing-001@northfield-bank-alerts.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="boundary123"
+
+--boundary123
+Content-Type: text/plain; charset="utf-8"
+
+Dear Valued Customer,
+
+We have detected unusual activity on your account. Your account will be
+closed within 24 hours unless you verify your identity immediately.
+
+Click here immediately to confirm your identity and avoid suspension:
+http://185.203.14.77/secure-login
+
+If you do not act now, your account access will be permanently restricted.
+
+Northfield Bank Security Team
+
+--boundary123
+Content-Type: text/html; charset="utf-8"
+
+<html>
+<body>
+<p>Dear Valued Customer,</p>
+<p>We have detected <b>unusual activity</b> on your account. Your account
+will be closed within 24 hours unless you verify your identity immediately.</p>
+<p><a href="http://185.203.14.77/secure-login">www.northfieldbank.example/secure-login</a></p>
+<p>If you do not act now, your account access will be permanently restricted.</p>
+<p>Northfield Bank Security Team</p>
+</body>
+</html>
+
+--boundary123--

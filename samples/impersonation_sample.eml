@@ -1,0 +1,18 @@
+Return-Path: <randomname12345@gmail.com>
+Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=randomname12345@gmail.com; dkim=pass header.d=gmail.com; dmarc=pass header.from=gmail.com
+From: "Alex Morgan" <randomname12345@gmail.com>
+To: staff@example.com
+Subject: Quick update
+Date: Mon, 16 Sep 2026 06:43:00 +0000
+Message-ID: <sample-bec-001@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+
+Good Morning,
+
+Kindly share with me your current personal mobile phone number for
+collaboration and quick updates.
+
+Thanks,
+
+Best regards.
