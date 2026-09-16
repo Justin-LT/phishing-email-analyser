@@ -37,8 +37,6 @@ simply isn't the person it claims to be. See
 
 ## Screenshots
 
-*(Add your own here, see the "Taking your own screenshots" section
-below for what's worth capturing.)*
 
 ![Quick check flagging a phishing email](screenshots/gui-high-risk.png)
 ![Known contacts catching an impersonation attempt](screenshots/gui-impersonation.png)
